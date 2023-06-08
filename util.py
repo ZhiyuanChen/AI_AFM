@@ -1,15 +1,18 @@
-from numpy.random import seed 
-seed(4) # fix seed for result reproducibility
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn import svm
+from numpy.random import seed
+
+seed(4)  # fix seed for result reproducibility
 import json
 import random
-import pandas as pd
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-from sklearn.utils import shuffle
-import numpy as np
 from copy import deepcopy
+
+import numpy as np
+import pandas as pd
+from sklearn import svm
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.utils import shuffle
+
 
 # def knn_(range_n_neighbors, _X_train, _Y_train, X_test, Y_test):
 def knn_(_X_train, _Y_train, X_test, Y_test):
@@ -20,16 +23,17 @@ def knn_(_X_train, _Y_train, X_test, Y_test):
         clf = KNeighborsClassifier(n_neighbors=n_neighbors, n_jobs=-1)
         # print(f'Training kNN with k = {n_neighbors}')
         clf.fit(_X_train, _Y_train)
-        testacc = clf.score(X_test,Y_test)
+        testacc = clf.score(X_test, Y_test)
 
         if testacc > best_testacc:
             best_testacc = testacc
             best_n_neighbors = n_neighbors
             # best_clf = deepcopy(clf)
-    print(f'\nBest Test Acc: {best_testacc*100:.2f} %')
-    print(f'Best k: {best_n_neighbors}')
+    print(f"\nBest Test Acc: {best_testacc*100:.2f} %")
+    print(f"Best k: {best_n_neighbors}")
     # return best_clf, best_testacc, best_n_neighbors
     return best_testacc, best_n_neighbors
+
 
 def rf_(depthrange, numtreerange, _X_train, _Y_train, X_test, Y_test):
     best_testacc = 0
@@ -39,13 +43,21 @@ def rf_(depthrange, numtreerange, _X_train, _Y_train, X_test, Y_test):
 
     for depth in depthrange:
         for num_trees in numtreerange:
-            for seed in np.arange(3): # 3 fold seed
-                clf = RandomForestClassifier(bootstrap=False,n_estimators=num_trees,max_features=None,criterion='gini',max_depth=depth, random_state=seed, n_jobs=-1)
+            for seed in np.arange(3):  # 3 fold seed
+                clf = RandomForestClassifier(
+                    bootstrap=False,
+                    n_estimators=num_trees,
+                    max_features=None,
+                    criterion="gini",
+                    max_depth=depth,
+                    random_state=seed,
+                    n_jobs=-1,
+                )
                 # print(f'Training RF with d = {depth}')
                 # print(f'Training RF with n = {num_trees}')
                 # print(f'Training RF with s = {seed}')
                 clf.fit(_X_train, _Y_train)
-                testacc = clf.score(X_test,Y_test)
+                testacc = clf.score(X_test, Y_test)
 
                 if testacc > best_testacc:
                     best_testacc = testacc
@@ -54,10 +66,10 @@ def rf_(depthrange, numtreerange, _X_train, _Y_train, X_test, Y_test):
                     best_seed = seed
                     # best_clf = deepcopy(clf)
 
-    print(f'\nBest Test Acc: {best_testacc*100:.2f} %')
-    print(f'Best depth: {best_depth}')
-    print(f'Best num trees: {best_num_trees}')
-    print(f'Best seed: {best_seed}')
+    print(f"\nBest Test Acc: {best_testacc*100:.2f} %")
+    print(f"Best depth: {best_depth}")
+    print(f"Best num trees: {best_num_trees}")
+    print(f"Best seed: {best_seed}")
     # return best_clf, best_testacc, best_depth, best_num_trees, best_seed
     return best_testacc, best_depth, best_num_trees, best_seed
 
@@ -66,10 +78,10 @@ def svm_(Cvals, kernels, degrees, gamma_vals, df_shapes, _X_train, _Y_train, X_t
     best_C = 1
     best_gamma = 0
     best_testacc = 0
-    best_kernel = 'linear'
+    best_kernel = "linear"
     best_degree = 0
-    best_gamma = 'scale'
-    best_df_shape = 'ovo'
+    best_gamma = "scale"
+    best_df_shape = "ovo"
     best_seed = 0
 
     for kernel in kernels:
@@ -77,10 +89,17 @@ def svm_(Cvals, kernels, degrees, gamma_vals, df_shapes, _X_train, _Y_train, X_t
             for c in Cvals:
                 for gamma in gamma_vals:
                     for df_shape in df_shapes:
-                        for seed in np.arange(3): # 3 fold seed
-                            clf=svm.SVC(C=c, kernel=kernel, decision_function_shape=df_shape, degree=degree, gamma=gamma, random_state=seed)
+                        for seed in np.arange(3):  # 3 fold seed
+                            clf = svm.SVC(
+                                C=c,
+                                kernel=kernel,
+                                decision_function_shape=df_shape,
+                                degree=degree,
+                                gamma=gamma,
+                                random_state=seed,
+                            )
                             clf.fit(_X_train, _Y_train)
-                            testacc = clf.score(X_test,Y_test)
+                            testacc = clf.score(X_test, Y_test)
 
                             if testacc > best_testacc:
                                 best_testacc = testacc
@@ -92,12 +111,12 @@ def svm_(Cvals, kernels, degrees, gamma_vals, df_shapes, _X_train, _Y_train, X_t
                                 best_seed = seed
                                 # best_clf = deepcopy(clf)
 
-    print(f'\nBest Test Acc: {best_testacc*100:.2f} %')
-    print(f'Best C: {best_C}')
-    print(f'Best kernel: {best_kernel}')
-    print(f'Best deg: {best_degree}')
-    print(f'Best gamma: {best_gamma}')
-    print(f'Best shape: {best_df_shape}')
-    print(f'Best seed: {best_seed}')
+    print(f"\nBest Test Acc: {best_testacc*100:.2f} %")
+    print(f"Best C: {best_C}")
+    print(f"Best kernel: {best_kernel}")
+    print(f"Best deg: {best_degree}")
+    print(f"Best gamma: {best_gamma}")
+    print(f"Best shape: {best_df_shape}")
+    print(f"Best seed: {best_seed}")
     # return best_clf, best_clf, best_testacc, best_C, best_kernel, best_degree, best_gamma, best_df_shape, best_seed
     return best_testacc, best_C, best_kernel, best_degree, best_gamma, best_df_shape, best_seed

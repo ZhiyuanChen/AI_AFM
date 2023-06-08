@@ -1,8 +1,8 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-import numpy as np
 
 class ContrastiveLoss_ori(nn.Module):
     """
@@ -26,7 +26,7 @@ class ContrastiveLoss_ori(nn.Module):
         distances = (output2 - output1).pow(2).sum(1)  # squared distances
         losses = (target.float() * distances) + (1 + -1 * target).float() * F.relu(self.margin - (distances + self.eps))
         return losses.mean() if size_average else losses.sum()
-        
+
 
 class ContrastiveLoss(nn.Module):
     """
@@ -39,10 +39,12 @@ class ContrastiveLoss(nn.Module):
         self.margin = margin
         self.eps = 1e-9
 
-    def forward(self, output1, output2, target, size_average=True): # Y = 0 = Dissimilar, Y = 1 = Similar
+    def forward(self, output1, output2, target, size_average=True):  # Y = 0 = Dissimilar, Y = 1 = Similar
         distances = (output2 - output1).pow(2).sum(1)  # squared distances
-        losses = 0.5 * (target.float() * distances +
-                        (1 + -1 * target).float() * F.relu(self.margin - (distances + self.eps).sqrt()).pow(2))
+        losses = 0.5 * (
+            target.float() * distances
+            + (1 + -1 * target).float() * F.relu(self.margin - (distances + self.eps).sqrt()).pow(2)
+        )
         return losses.mean() if size_average else losses.sum()
 
     # def forward(self, output1, output2, target, size_average=True): # Y = 0 = Similar, Y = 1 = Dissimilar
@@ -91,8 +93,8 @@ class OnlineContrastiveLoss(nn.Module):
             negative_pairs = negative_pairs.cuda()
         positive_loss = (embeddings[positive_pairs[:, 0]] - embeddings[positive_pairs[:, 1]]).pow(2).sum(1)
         negative_loss = F.relu(
-            self.margin - (embeddings[negative_pairs[:, 0]] - embeddings[negative_pairs[:, 1]]).pow(2).sum(
-                1).sqrt()).pow(2)
+            self.margin - (embeddings[negative_pairs[:, 0]] - embeddings[negative_pairs[:, 1]]).pow(2).sum(1).sqrt()
+        ).pow(2)
         loss = torch.cat([positive_loss, negative_loss], dim=0)
         return loss.mean()
 
@@ -111,7 +113,6 @@ class OnlineTripletLoss(nn.Module):
         self.triplet_selector = triplet_selector
 
     def forward(self, embeddings, target):
-
         triplets = self.triplet_selector.get_triplets(embeddings, target)
 
         if embeddings.is_cuda:
